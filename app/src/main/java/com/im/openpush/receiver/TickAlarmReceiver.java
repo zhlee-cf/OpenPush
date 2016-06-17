@@ -10,8 +10,8 @@ import com.im.openpush.utils.MyLog;
 import com.im.openpush.utils.MyUtils;
 
 /**
- * 收到广播时，判断IMService和IMPushService是否在运行中，若不在则启动服务
- * 若IMPushService在运行 并且 屏幕是锁屏状态 则唤醒CPU并立马释放
+ * 收到广播时，判断MPushService是否在运行中，若不在则启动服务
+ * 若IMPushService在运行 并且 屏幕是锁屏状态 则唤醒CPU30秒后释放
  */
 public class TickAlarmReceiver extends BroadcastReceiver {
 

@@ -10,11 +10,13 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.telephony.TelephonyManager;
 
 import com.im.openpush.R;
 import com.im.openpush.activity.MainActivity;
 import com.im.openpush.receiver.ScreenListener;
 import com.im.openpush.receiver.TickAlarmReceiver;
+import com.im.openpush.utils.MyBase64Utils;
 import com.im.openpush.utils.MyLog;
 import com.im.openpush.utils.ThreadUtil;
 import com.rabbitmq.client.AMQP;
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * 接收来自RabbitMQ的推送
- * 目前是持久化模式 不在线的话 推送会在再次上线时推送过去 但是 多用户同时在线，只有一个用户可以收到推送，并且是轮流收到
+ * 目前是持久化模式 不在线的话 推送会在再次上线时推送过去
  * <p/>
  * 交换机持久化 队列持久化 消息持久化
  * Created by lzh12 on 2016/6/7.
@@ -64,6 +66,8 @@ public class IMPushService extends Service {
         super.onCreate();
         MyLog.showLog("IMPushService---onCreate");
         initData();
+        // 开启前台进程  不在状态栏添加图标
+        startForeground(0, null);
         // 初始化连接工厂
         setupConnectionFactory();
         // 订阅
@@ -80,8 +84,10 @@ public class IMPushService extends Service {
     private void initData() {
         mIMPushService = this;
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        String username = "RabbitMQ";
-        DURABLE_QUEUE_NAME = username + "#OpenIM";
+        TelephonyManager telephonyManager= (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        String deviceId =telephonyManager.getDeviceId();
+        MyLog.showLog("deviceId::" + deviceId);
+        DURABLE_QUEUE_NAME = MyBase64Utils.encodeToString(deviceId) + "#OpenIM";
     }
 
     @Override
@@ -186,9 +192,17 @@ public class IMPushService extends Service {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .build();
         // 设置默认声音
-        notification.defaults = Notification.DEFAULT_SOUND;
+        notification.defaults |= Notification.DEFAULT_SOUND;
         // 设定震动(需加VIBRATE权限)
-        notification.defaults = Notification.DEFAULT_VIBRATE;
+        notification.defaults |= Notification.DEFAULT_VIBRATE;
+        notification.vibrate = new long[]{0,100,200,300};
+        // 设置LED闪烁
+        notification.defaults |= Notification.DEFAULT_LIGHTS;
+        notification.ledARGB = 0xff00ff00;
+        notification.ledOnMS = 300;
+        notification.ledOffMS = 1000;
+        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+
         // 点击通知后 通知栏消失
         notification.flags = Notification.FLAG_AUTO_CANCEL;
         notificationManager.notify(5555, notification);
