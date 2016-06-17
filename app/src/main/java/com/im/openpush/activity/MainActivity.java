@@ -1,9 +1,13 @@
-package com.im.openpush;
+package com.im.openpush.activity;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.im.openpush.service.IMPushService;
+import com.im.openpush.utils.MyToast;
+import com.im.openpush.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,11 +22,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void startService(View view) {
         startService(service);
-        MyUtils.showToast(this,"开启服务成功");
+        MyToast.showToast(this, "开启服务成功");
     }
 
     public void stopService(View view) {
         stopService(service);
-        MyUtils.showToast(this,"关闭服务成功");
+        MyToast.showToast(this, "关闭服务成功");
     }
 }

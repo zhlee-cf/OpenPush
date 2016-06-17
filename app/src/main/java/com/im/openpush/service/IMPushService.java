@@ -1,5 +1,6 @@
-package com.im.openpush;
+package com.im.openpush.service;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,6 +11,12 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
 
+import com.im.openpush.R;
+import com.im.openpush.activity.MainActivity;
+import com.im.openpush.receiver.ScreenListener;
+import com.im.openpush.receiver.TickAlarmReceiver;
+import com.im.openpush.utils.MyLog;
+import com.im.openpush.utils.ThreadUtil;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -44,6 +51,7 @@ public class IMPushService extends Service {
     private int locked;
     private Channel channel;
     private Connection connection;
+    private PendingIntent tickPendIntent;
 
     @Nullable
     @Override
@@ -54,15 +62,26 @@ public class IMPushService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mIMPushService = this;
         MyLog.showLog("IMPushService---onCreate");
+        initData();
+        // 初始化连接工厂
+        setupConnectionFactory();
+        // 订阅
+        subscribePush();
+        // 开启计时器
+        setTickAlarm();
+        // 锁屏保持CPU运行
+//        keepCPUAlive();
+    }
+
+    /**
+     * 初始化数据
+     */
+    private void initData() {
+        mIMPushService = this;
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         String username = "RabbitMQ";
         DURABLE_QUEUE_NAME = username + "#OpenIM";
-        setupConnectionFactory();
-        subscribePush();
-
-//        keepCPUAlive();
     }
 
     @Override
@@ -73,6 +92,31 @@ public class IMPushService extends Service {
     public static IMPushService getInstance() {
         return mIMPushService;
     }
+
+    /**
+     * 开个计时器类似的  唤醒服务
+     */
+    protected void setTickAlarm() {
+        AlarmManager alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, TickAlarmReceiver.class);
+        int requestCode = 0;
+        tickPendIntent = PendingIntent.getBroadcast(this,
+                requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        //小米2s的MIUI操作系统，目前最短广播间隔为5分钟，少于5分钟的alarm会等到5分钟再触发
+        long triggerAtTime = System.currentTimeMillis();
+        MyLog.showLog("triggerAtTime::" + triggerAtTime);
+        int interval = 180 * 1000;
+        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, tickPendIntent);
+    }
+
+    /**
+     * 取消计时器
+     */
+    protected void cancelTickAlarm(){
+        AlarmManager alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmMgr.cancel(tickPendIntent);
+    }
+
 
     /**
      * 初始化连接工厂类
@@ -111,6 +155,7 @@ public class IMPushService extends Service {
                             String message = new String(body, "UTF-8");
                             newMsgNotify(message);
                             MyLog.showLog("收到RabbitMQ推送::" + message);
+                            // 手动回执
                             channel.basicAck(envelope.getDeliveryTag(), false);
                         }
                     };
@@ -127,7 +172,7 @@ public class IMPushService extends Service {
      */
     private void newMsgNotify(String messageBody) {
         CharSequence tickerText = "RabbitMQ新通知！";
-        // 收到单人消息时，亮屏3秒钟
+        // 收到单人消息时，亮屏1秒钟
         acquireWakeLock();
         Intent intent = new Intent(this, MainActivity.class);
         // 必须添加
@@ -150,7 +195,7 @@ public class IMPushService extends Service {
     }
 
     /**
-     * 方法 点亮屏幕3秒钟 要加权限 <uses-permission
+     * 方法 点亮屏幕1秒钟 要加权限 <uses-permission
      * android:name="android.permission.WAKE_LOCK"></uses-permission>
      */
     private void acquireWakeLock() {
@@ -196,6 +241,7 @@ public class IMPushService extends Service {
 
     @Override
     public void onDestroy() {
+        // 退出服务时 关闭Channel，断开链接(不然还会收到消息)
         if (channel != null){
             try {
                 channel.close();
@@ -210,6 +256,7 @@ public class IMPushService extends Service {
                 e.printStackTrace();
             }
         }
+        cancelTickAlarm();
         super.onDestroy();
     }
 }

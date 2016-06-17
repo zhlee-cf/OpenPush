@@ -1,4 +1,4 @@
-package com.im.openpush;
+package com.im.openpush.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

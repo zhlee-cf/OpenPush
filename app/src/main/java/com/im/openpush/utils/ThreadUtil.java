@@ -1,4 +1,4 @@
-package com.im.openpush;
+package com.im.openpush.utils;
 
 import android.os.Handler;
 
