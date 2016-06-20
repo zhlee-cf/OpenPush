@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import com.im.openpush.R;
 import com.im.openpush.activity.MainActivity;
 import com.im.openpush.receiver.ScreenListener;
 import com.im.openpush.receiver.TickAlarmReceiver;
+import com.im.openpush.receiver.TimeTickReceiver;
 import com.im.openpush.utils.MyBase64Utils;
 import com.im.openpush.utils.MyLog;
 import com.im.openpush.utils.ThreadUtil;
@@ -54,6 +56,7 @@ public class IMPushService extends Service {
     private Channel channel;
     private Connection connection;
     private PendingIntent tickPendIntent;
+    private TimeTickReceiver mTimeTickReceiver;
 
     @Nullable
     @Override
@@ -73,9 +76,21 @@ public class IMPushService extends Service {
         // 订阅
         subscribePush();
         // 开启计时器
-        setTickAlarm();
+//        setTickAlarm();
+        // 监听系统时间改变广播
+        setTimeTickReceiver();
         // 锁屏保持CPU运行
 //        keepCPUAlive();
+    }
+
+    /**
+     * 监听系统时间改变广播
+     * 此广播每分钟发一次
+     */
+    private void setTimeTickReceiver() {
+        mTimeTickReceiver = new TimeTickReceiver();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        registerReceiver(mTimeTickReceiver,filter);
     }
 
     /**
@@ -178,7 +193,7 @@ public class IMPushService extends Service {
      */
     private void newMsgNotify(String messageBody) {
         CharSequence tickerText = "RabbitMQ新通知！";
-        // 收到单人消息时，亮屏1秒钟
+        // 收到单人消息时，亮屏
         acquireWakeLock();
         Intent intent = new Intent(this, MainActivity.class);
         // 必须添加
@@ -197,11 +212,11 @@ public class IMPushService extends Service {
         notification.defaults |= Notification.DEFAULT_VIBRATE;
         notification.vibrate = new long[]{0,100,200,300};
         // 设置LED闪烁
-        notification.defaults |= Notification.DEFAULT_LIGHTS;
-        notification.ledARGB = 0xff00ff00;
-        notification.ledOnMS = 300;
-        notification.ledOffMS = 1000;
-        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+//        notification.defaults |= Notification.DEFAULT_LIGHTS;
+//        notification.ledARGB = 0xff00ff00;
+//        notification.ledOnMS = 300;
+//        notification.ledOffMS = 1000;
+//        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
 
         // 点击通知后 通知栏消失
         notification.flags = Notification.FLAG_AUTO_CANCEL;
@@ -209,7 +224,7 @@ public class IMPushService extends Service {
     }
 
     /**
-     * 方法 点亮屏幕1秒钟 要加权限 <uses-permission
+     * 方法 点亮屏幕 要加权限 <uses-permission
      * android:name="android.permission.WAKE_LOCK"></uses-permission>
      */
     private void acquireWakeLock() {
@@ -217,7 +232,8 @@ public class IMPushService extends Service {
             PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
             wakeLock = powerManager.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK, "lzh");
         }
-        wakeLock.acquire(1000);
+        wakeLock.acquire();
+        wakeLock.release();
     }
 
     /**
@@ -270,7 +286,10 @@ public class IMPushService extends Service {
                 e.printStackTrace();
             }
         }
-        cancelTickAlarm();
+        if (mTimeTickReceiver != null){
+            unregisterReceiver(mTimeTickReceiver);
+        }
+//        cancelTickAlarm();
         super.onDestroy();
     }
 }

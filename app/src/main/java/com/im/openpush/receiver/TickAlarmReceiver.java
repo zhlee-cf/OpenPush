@@ -18,7 +18,7 @@ public class TickAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         MyLog.showLog("OpenIMPush收到Alarm广播");
-        boolean isIMPushServiceRunning = MyUtils.isServiceRunning(context, "com.open.im.service.IMPushService");
+        boolean isIMPushServiceRunning = MyUtils.isServiceRunning(context, "com.im.openpush.service.IMPushService");
         if (!isIMPushServiceRunning) {
             context.startService(new Intent(context, IMPushService.class));
         } else {
