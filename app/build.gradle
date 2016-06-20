@@ -5,6 +5,13 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
+
+        ndk{
+            moduleName "helper"         //生成的so名字
+            abiFilters "armeabi", "armeabi-v7a", "x86"  //输出指定三种abi体系结构下的so库。目前可有可无。
+            ldLibs "log"
+        }
+
         applicationId "com.im.openpush"
         minSdkVersion 16
         targetSdkVersion 23
@@ -22,8 +29,7 @@ android {
         }
     }
     sourceSets.main {
-        jni.srcDirs = []
-//        obj.srcDirs = []
+        jniLibs.srcDir 'src/main/libs'
     }
 }
 
