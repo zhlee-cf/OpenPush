@@ -28,11 +28,9 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.impl.DefaultExceptionHandler;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -44,7 +42,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class IMPushService extends Service {
 
-    private static IMPushService mIMPushService;
     private ConnectionFactory factory;
     private static final String DURABLE_EXCHANGE_NAME = "durable_3";
     // TODO 这个参数应该是唯一的 跟 username有关
@@ -76,9 +73,9 @@ public class IMPushService extends Service {
         // 订阅
         subscribePush();
         // 开启计时器
-//        setTickAlarm();
+        setTickAlarm();
         // 监听系统时间改变广播
-        setTimeTickReceiver();
+//        setTimeTickReceiver();
         // 锁屏保持CPU运行
 //        keepCPUAlive();
     }
@@ -90,17 +87,16 @@ public class IMPushService extends Service {
     private void setTimeTickReceiver() {
         mTimeTickReceiver = new TimeTickReceiver();
         IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
-        registerReceiver(mTimeTickReceiver,filter);
+        registerReceiver(mTimeTickReceiver, filter);
     }
 
     /**
      * 初始化数据
      */
     private void initData() {
-        mIMPushService = this;
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        TelephonyManager telephonyManager= (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-        String deviceId =telephonyManager.getDeviceId();
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        String deviceId = telephonyManager.getDeviceId();
         MyLog.showLog("deviceId::" + deviceId);
         DURABLE_QUEUE_NAME = MyBase64Utils.encodeToString(deviceId) + "#OpenIM";
     }
@@ -108,10 +104,6 @@ public class IMPushService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
-    }
-
-    public static IMPushService getInstance() {
-        return mIMPushService;
     }
 
     /**
@@ -133,7 +125,7 @@ public class IMPushService extends Service {
     /**
      * 取消计时器
      */
-    protected void cancelTickAlarm(){
+    protected void cancelTickAlarm() {
         AlarmManager alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarmMgr.cancel(tickPendIntent);
     }
@@ -144,13 +136,33 @@ public class IMPushService extends Service {
      */
     private void setupConnectionFactory() {
         factory = new ConnectionFactory();
-        String uri = "amqp://push.openim.top";
-        try {
+//        String uri = "amqp://push.openim.top";
+//        try {
+            // 设置允许自动重连
             factory.setAutomaticRecoveryEnabled(true);
-            factory.setUri(uri);
-        } catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
-            e1.printStackTrace();
-        }
+            // 设置连接超时时间
+            factory.setConnectionTimeout(60 * 1000);
+            // 设置重连时间间隔 默认就是5秒
+            factory.setNetworkRecoveryInterval(5 * 1000);
+            // 默认10000
+            factory.setHandshakeTimeout(5000);
+            // 默认60
+            factory.setRequestedHeartbeat(30);
+
+            factory.setExceptionHandler(new DefaultExceptionHandler() {
+                @Override
+                public void handleConnectionRecoveryException(Connection conn, Throwable exception) {
+                    MyLog.showLog("重新连接异常::" + exception.getMessage());
+                    super.handleConnectionRecoveryException(conn, exception);
+                }
+            });
+
+            // 设置服务器Uri
+            factory.setHost("push.openim.top");
+//            factory.setUri(uri);
+//        } catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
+//            e1.printStackTrace();
+//        }
     }
 
     /**
@@ -210,7 +222,7 @@ public class IMPushService extends Service {
         notification.defaults |= Notification.DEFAULT_SOUND;
         // 设定震动(需加VIBRATE权限)
         notification.defaults |= Notification.DEFAULT_VIBRATE;
-        notification.vibrate = new long[]{0,100,200,300};
+        notification.vibrate = new long[]{0, 100, 200, 300};
         // 设置LED闪烁
 //        notification.defaults |= Notification.DEFAULT_LIGHTS;
 //        notification.ledARGB = 0xff00ff00;
@@ -272,24 +284,26 @@ public class IMPushService extends Service {
     @Override
     public void onDestroy() {
         // 退出服务时 关闭Channel，断开链接(不然还会收到消息)
-        if (channel != null){
+        if (channel != null) {
             try {
                 channel.close();
             } catch (IOException | TimeoutException e) {
                 e.printStackTrace();
             }
         }
-        if (connection != null){
+        if (connection != null) {
             try {
                 connection.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        if (mTimeTickReceiver != null){
+        if (mTimeTickReceiver != null) {
             unregisterReceiver(mTimeTickReceiver);
         }
-//        cancelTickAlarm();
+        cancelTickAlarm();
+        stopForeground(true);
+        MyLog.showLog("服务被杀死---onDestroy");
         super.onDestroy();
     }
 }

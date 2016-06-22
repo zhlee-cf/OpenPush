@@ -11,6 +11,7 @@ import com.im.openpush.service.IMPushService;
 import com.im.openpush.utils.MyFileUtils;
 import com.im.openpush.utils.MyLog;
 import com.im.openpush.utils.MyToast;
+import com.im.openpush.utils.MyUtils;
 import com.im.openpush.utils.ThreadUtil;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,26 +24,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         act = this;
         setContentView(R.layout.activity_main);
-        service = new Intent(this,IMPushService.class);
+        service = new Intent(this, IMPushService.class);
         initDaemonService();
     }
 
     public void startService(View view) {
-        startService(service);
+        if (MyUtils.isServiceRunning(act, "com.im.openpush.service.IMPushService")) {
+            MyToast.showToast(this, "服务已经在运行了");
+            return;
+        }
         ThreadUtil.runOnBackThread(new Runnable() {
             @Override
             public void run() {
                 try {
+                    startService(service);
+                    MyToast.showToast(act, "开启服务成功");
                     MyLog.showLog("路径:" + MyFileUtils.createRootPath());
                     NativeRuntime.getInstance().stringFromJNI();
                     NativeRuntime.getInstance().startService(getPackageName() + "/com.im.openpush.service.IMPushService", MyFileUtils.createRootPath());
-                    MyToast.showToast(act,"开启守护进程成功");
+                    MyToast.showToast(act, "开启守护进程成功");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        MyToast.showToast(this, "开启服务成功");
     }
 
     private void initDaemonService() {
@@ -54,12 +59,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopService(View view) {
+//        finish();
         stopService(service);
-        try {
-            NativeRuntime.getInstance().stopService();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        MyToast.showToast(this, "关闭服务成功");
+        ThreadUtil.runOnBackThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    NativeRuntime.getInstance().stopService();
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 }

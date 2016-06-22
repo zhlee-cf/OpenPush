@@ -344,6 +344,7 @@ void Java_com_im_openpush_fork_NativeRuntime_startService(JNIEnv* env, jobject t
  * 关闭Service
  */
 void Java_com_im_openpush_fork_NativeRuntime_stopService() {
+    kill(getpid(),-9);
     exit(0);
 }
 
