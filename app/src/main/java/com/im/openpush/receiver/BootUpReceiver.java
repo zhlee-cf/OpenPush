@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
 
+import com.im.openpush.utils.MyLog;
+
 /**
  *
  * Created by lzh12 on 2016/6/21.
@@ -12,6 +14,7 @@ import android.widget.Toast;
 public class BootUpReceiver extends BroadcastReceiver{
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context,"手机开机了",Toast.LENGTH_SHORT).show();
+        Toast.makeText(context,"监听到系统广播" + intent.getAction(),Toast.LENGTH_SHORT).show();
+        MyLog.showLog("监听到系统广播" + intent.getAction());
     }
 }

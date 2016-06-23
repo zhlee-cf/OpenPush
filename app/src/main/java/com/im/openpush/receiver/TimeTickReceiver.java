@@ -21,7 +21,7 @@ import java.util.Date;
  */
 public class TimeTickReceiver extends BroadcastReceiver {
 
-    private int i;
+    private static int i;
     private static String logPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/exiu/tick_log.txt";
     private static File logFile = new File(logPath);
 

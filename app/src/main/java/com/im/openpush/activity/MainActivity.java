@@ -60,12 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void stopService(View view) {
 //        finish();
-        stopService(service);
         ThreadUtil.runOnBackThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     NativeRuntime.getInstance().stopService();
+                    stopService(service);
                     android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(0);
                 } catch (Exception e) {

@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
@@ -30,7 +31,11 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.impl.DefaultExceptionHandler;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -54,6 +59,10 @@ public class IMPushService extends Service {
     private Connection connection;
     private PendingIntent tickPendIntent;
     private TimeTickReceiver mTimeTickReceiver;
+
+    private static String logPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/exiu/push_log.txt";
+    private static File logFile = new File(logPath);
+    private SimpleDateFormat ft;
 
     @Nullable
     @Override
@@ -99,6 +108,7 @@ public class IMPushService extends Service {
         String deviceId = telephonyManager.getDeviceId();
         MyLog.showLog("deviceId::" + deviceId);
         DURABLE_QUEUE_NAME = MyBase64Utils.encodeToString(deviceId) + "#OpenIM";
+        ft = new SimpleDateFormat("HH:mm:ss");
     }
 
     @Override
@@ -118,7 +128,7 @@ public class IMPushService extends Service {
         //小米2s的MIUI操作系统，目前最短广播间隔为5分钟，少于5分钟的alarm会等到5分钟再触发
         long triggerAtTime = System.currentTimeMillis();
         MyLog.showLog("triggerAtTime::" + triggerAtTime);
-        int interval = 180 * 1000;
+        int interval = 60 * 1000;
         alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, triggerAtTime, interval, tickPendIntent);
     }
 
@@ -187,6 +197,9 @@ public class IMPushService extends Service {
                                                    AMQP.BasicProperties properties, byte[] body) throws IOException {
                             String message = new String(body, "UTF-8");
                             newMsgNotify(message);
+
+                            writeToLog(message);
+
                             MyLog.showLog("收到RabbitMQ推送::" + message);
                             // 手动回执
                             channel.basicAck(envelope.getDeliveryTag(), false);
@@ -198,6 +211,24 @@ public class IMPushService extends Service {
                 }
             }
         });
+    }
+
+    /**
+     * 把收到的推送写到文件中
+     * @param message
+     */
+    private void writeToLog(String message) {
+        if (!logFile.getParentFile().exists()) {
+            logFile.getParentFile().mkdirs();
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(logFile, true);
+            fos.write((message + "**收到时间==" + ft.format(new Date())).getBytes());
+            fos.write("\n".getBytes());
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
