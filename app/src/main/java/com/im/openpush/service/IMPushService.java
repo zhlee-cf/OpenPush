@@ -148,27 +148,28 @@ public class IMPushService extends Service {
         factory = new ConnectionFactory();
 //        String uri = "amqp://push.openim.top";
 //        try {
-            // 设置允许自动重连
-            factory.setAutomaticRecoveryEnabled(true);
-            // 设置连接超时时间
-            factory.setConnectionTimeout(60 * 1000);
-            // 设置重连时间间隔 默认就是5秒
-            factory.setNetworkRecoveryInterval(5 * 1000);
-            // 默认10000
-            factory.setHandshakeTimeout(5000);
-            // 默认60
-            factory.setRequestedHeartbeat(30);
+        // 设置允许自动重连
+        factory.setAutomaticRecoveryEnabled(true);
 
-            factory.setExceptionHandler(new DefaultExceptionHandler() {
-                @Override
-                public void handleConnectionRecoveryException(Connection conn, Throwable exception) {
-                    MyLog.showLog("重新连接异常::" + exception.getMessage());
-                    super.handleConnectionRecoveryException(conn, exception);
-                }
-            });
+        // 设置连接超时时间
+        factory.setConnectionTimeout(60 * 1000);
+        // 设置重连时间间隔 默认就是5秒
+        factory.setNetworkRecoveryInterval(5 * 1000);
+        // 默认10000
+        factory.setHandshakeTimeout(5000);
+        // 默认60
+        factory.setRequestedHeartbeat(30);
 
-            // 设置服务器Uri
-            factory.setHost("push.openim.top");
+        factory.setExceptionHandler(new DefaultExceptionHandler() {
+            @Override
+            public void handleConnectionRecoveryException(Connection conn, Throwable exception) {
+                MyLog.showLog("重新连接异常::" + exception.getMessage());
+                super.handleConnectionRecoveryException(conn, exception);
+            }
+        });
+
+        // 设置服务器Uri
+        factory.setHost("push.openim.top");
 //            factory.setUri(uri);
 //        } catch (KeyManagementException | NoSuchAlgorithmException | URISyntaxException e1) {
 //            e1.printStackTrace();
@@ -186,6 +187,7 @@ public class IMPushService extends Service {
                     connection = factory.newConnection();
 
                     channel = connection.createChannel();
+
                     channel.exchangeDeclare(DURABLE_EXCHANGE_NAME, "fanout", durable);
 
                     MyLog.showLog(DURABLE_QUEUE_NAME + "============");
@@ -215,6 +217,7 @@ public class IMPushService extends Service {
 
     /**
      * 把收到的推送写到文件中
+     *
      * @param message
      */
     private void writeToLog(String message) {
@@ -255,11 +258,11 @@ public class IMPushService extends Service {
         notification.defaults |= Notification.DEFAULT_VIBRATE;
         notification.vibrate = new long[]{0, 100, 200, 300};
         // 设置LED闪烁
-//        notification.defaults |= Notification.DEFAULT_LIGHTS;
-//        notification.ledARGB = 0xff00ff00;
-//        notification.ledOnMS = 300;
-//        notification.ledOffMS = 1000;
-//        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+        notification.defaults |= Notification.DEFAULT_LIGHTS;
+        notification.ledARGB = 0xff00ff00;
+        notification.ledOnMS = 300;
+        notification.ledOffMS = 1000;
+        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
 
         // 点击通知后 通知栏消失
         notification.flags = Notification.FLAG_AUTO_CANCEL;
