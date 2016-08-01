@@ -1,4 +1,4 @@
-package com.im.openpush.receiver;
+package com.im.rabbitmqpush.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,9 +6,9 @@ import android.content.Intent;
 import android.os.Environment;
 import android.os.PowerManager;
 
-import com.im.openpush.service.IMPushService;
-import com.im.openpush.utils.MyLog;
-import com.im.openpush.utils.MyUtils;
+import com.im.rabbitmqpush.service.IMPushService;
+import com.im.rabbitmqpush.utils.MyLog;
+import com.im.rabbitmqpush.utils.MyUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;

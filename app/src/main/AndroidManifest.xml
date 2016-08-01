@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.im.openpush">
+    package="com.im.rabbitmqpush">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!--<uses-permission android:name="android.permission.DEVICE_POWER" />-->
@@ -15,13 +15,13 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
-        android:name=".utils.MyApp"
+        android:name="com.im.rabbitmqpush.utils.MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.MainActivity">
+        <activity android:name="com.im.rabbitmqpush.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,13 +29,13 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".service.IMPushService"
+            android:name="com.im.rabbitmqpush.service.IMPushService"
             android:enabled="true">
             <intent-filter android:priority="1000">
                 <action android:name="com.open.push.impushservice" />
             </intent-filter>
         </service>
-        <receiver android:name=".receiver.BootUpReceiver">
+        <receiver android:name="com.im.rabbitmqpush.receiver.BootUpReceiver">
             <intent-filter>
                 <!-- 开机广播-->
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -45,7 +45,7 @@
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.TickAlarmReceiver"/>
+        <receiver android:name="com.im.rabbitmqpush.receiver.TickAlarmReceiver"/>
 
     </application>
 

@@ -1,10 +1,10 @@
-package com.im.openpush.receiver;
+package com.im.rabbitmqpush.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.im.openpush.utils.MyLog;
+import com.im.rabbitmqpush.utils.MyLog;
 
 /**
  *

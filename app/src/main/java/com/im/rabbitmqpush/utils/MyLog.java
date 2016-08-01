@@ -1,4 +1,4 @@
-package com.im.openpush.utils;
+package com.im.rabbitmqpush.utils;
 
 import android.util.Log;
 

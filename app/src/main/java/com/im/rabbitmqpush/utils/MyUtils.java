@@ -1,11 +1,8 @@
-package com.im.openpush.utils;
+package com.im.rabbitmqpush.utils;
 
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
-import android.content.ComponentName;
 import android.content.Context;
-import android.widget.Toast;
 
 import java.util.List;
 

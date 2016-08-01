@@ -1,4 +1,4 @@
-package com.im.openpush.service;
+package com.im.rabbitmqpush.service;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -14,14 +14,14 @@ import android.os.PowerManager;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
-import com.im.openpush.R;
-import com.im.openpush.activity.MainActivity;
-import com.im.openpush.receiver.ScreenListener;
-import com.im.openpush.receiver.TickAlarmReceiver;
-import com.im.openpush.receiver.TimeTickReceiver;
-import com.im.openpush.utils.MyBase64Utils;
-import com.im.openpush.utils.MyLog;
-import com.im.openpush.utils.ThreadUtil;
+import com.im.rabbitmqpush.R;
+import com.im.rabbitmqpush.activity.MainActivity;
+import com.im.rabbitmqpush.receiver.ScreenListener;
+import com.im.rabbitmqpush.receiver.TickAlarmReceiver;
+import com.im.rabbitmqpush.receiver.TimeTickReceiver;
+import com.im.rabbitmqpush.utils.MyBase64Utils;
+import com.im.rabbitmqpush.utils.MyLog;
+import com.im.rabbitmqpush.utils.ThreadUtil;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;

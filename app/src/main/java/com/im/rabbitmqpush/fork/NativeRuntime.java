@@ -1,6 +1,6 @@
-package com.im.openpush.fork;
+package com.im.rabbitmqpush.fork;
 
-import com.im.openpush.utils.MyLog;
+import com.im.rabbitmqpush.utils.MyLog;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

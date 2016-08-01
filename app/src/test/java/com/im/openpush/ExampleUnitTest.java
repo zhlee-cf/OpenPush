@@ -1,4 +1,4 @@
-package com.im.openpush;
+package com.im.rabbitmqpush;
 
 import org.junit.Test;
 

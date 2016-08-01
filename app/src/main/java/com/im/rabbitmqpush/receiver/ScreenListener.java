@@ -1,4 +1,4 @@
-package com.im.openpush.receiver;
+package com.im.rabbitmqpush.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

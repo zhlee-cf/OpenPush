@@ -1,18 +1,18 @@
-package com.im.openpush.activity;
+package com.im.rabbitmqpush.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import com.im.openpush.R;
-import com.im.openpush.fork.NativeRuntime;
-import com.im.openpush.service.IMPushService;
-import com.im.openpush.utils.MyFileUtils;
-import com.im.openpush.utils.MyLog;
-import com.im.openpush.utils.MyToast;
-import com.im.openpush.utils.MyUtils;
-import com.im.openpush.utils.ThreadUtil;
+import com.im.rabbitmqpush.R;
+import com.im.rabbitmqpush.fork.NativeRuntime;
+import com.im.rabbitmqpush.service.IMPushService;
+import com.im.rabbitmqpush.utils.MyFileUtils;
+import com.im.rabbitmqpush.utils.MyLog;
+import com.im.rabbitmqpush.utils.MyToast;
+import com.im.rabbitmqpush.utils.MyUtils;
+import com.im.rabbitmqpush.utils.ThreadUtil;
 
 public class MainActivity extends AppCompatActivity {
 
